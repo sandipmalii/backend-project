@@ -2,7 +2,10 @@
 /* <========== Error Handling ===============> */
 
 class ApiError extends Error {
-    constructor(statusCode, message = "Something went wrong", errors = [], stack = "") {
+    constructor(statusCode,
+       message = "Something went wrong", 
+    errors = [], 
+    stack = "") {
        
         super(message); // Call the super constructor of Error
         this.statusCode = statusCode; // Set the statusCode property
