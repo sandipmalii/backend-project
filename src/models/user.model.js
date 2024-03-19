@@ -51,7 +51,7 @@ const userSchema = new Schema({
 userSchema.pre("save", async function (next) {
     if(this.isModified("password")) return next(); //sees only the password and not other fields
 
-    this.password = bcrypt.hash(this.password, 10); // encrypt the password
+    this.password = await bcrypt.hash(this.password, 10); // encrypt the password
     next();
 })
 
