@@ -96,60 +96,74 @@ const registerUser = asyncHandler(async (req, res) => {
     );
 });
 
-
 const loginUser = asyncHandler(async (req, res) => {
-    // req body -> data
-    // username or email
-    //find the user
-    //password check
-    //access and refresh token
-    //send cookie
+    // Extracting email, username, and password from request body
+    const { email, username, password } = req.body;
 
-    const{email,username,password} = req.body
-
-    if(!email || !username){
-        throw new ApiError(400, "username or email is required")
+    // Checking if email or username is provided
+    if (!email || !username) {
+        throw new ApiError(400, "Username or email is required");
     }
 
+    // Finding the user by email or username
     const user = await User.findOne({
-        $or:[{email},{username}]
-    })
+        $or: [{ email }, { username }]
+    });
 
-    if(!user){
-        throw new ApiError(404, "User does not exist")
+    // If user not found, throw an error
+    if (!user) {
+        throw new ApiError(404, "User does not exist");
     }
 
-    const isPasswordCorrect = await user.isPasswordCorrect(password)
-    if(!isPasswordValid){
-        throw new ApiError(401, "Password is incorrect")
+    // Checking if the provided password is correct
+    const isPasswordCorrect = await user.isPasswordCorrect(password);
+    if (!isPasswordCorrect) {
+        throw new ApiError(401, "Password is incorrect");
     }
 
-  const{ accessToken, refreshToken} = await generateAccessTokenAndRefreshToken(user._id)
+    // Generating access token and refresh token
+    const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(user._id);
 
-  const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+    // Fetching logged in user details while excluding password and refresh token
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
-  const options = {
-      httpOnly: true,
-      secure: true,
-  }
+    // Options for setting cookies
+    const options = {
+        httpOnly: true,
+        secure: true,
+    };
 
-  return res.status(200)
-  .cookie("accessToken",accessToken, options)
-  .cookie("refreshToken", refreshToken, options)
-      .json(
-        new ApiResponse(200, {
-            user: loggedInUser, accessToken,
-            refreshToken 
-        },
-        "User logged in successfully")
-      )
-})
+    // Sending response with cookies and user details
+    return res.status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(new ApiResponse(200, {
+            user: loggedInUser,
+            accessToken,
+            refreshToken
+        }, "User logged in successfully"));
+});
 
 const logoutUser = asyncHandler(async (req, res) => {
-    
-})
+    // Clearing refresh token for the logged out user
+    await User.findByIdAndUpdate(req.user._id, {
+        $set: { refreshToken: undefined }
+    }, { new: true });
+
+    // Options for clearing cookies
+    const options = {
+        httpOnly: true,
+        secure: true,
+    };
+
+    // Sending response with cleared cookies
+    return res.status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, {}, "User logged out successfully"));
+});
 
 
 
 // Export the registerUser function
-export { registerUser, loginUser };
+export { registerUser, loginUser, logoutUser };
