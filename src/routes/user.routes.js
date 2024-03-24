@@ -1,10 +1,7 @@
 // import { Router } from "express";
 // import { registerUser } from "../controllers/user.controller.js";
-
 // import {upload} from "../middlewares/multer.middleware.js"
-
 // const router = Router()
-
 // router.route("/register").post(
 //     upload.fields([
 //         upload.fields([
@@ -20,15 +17,16 @@
 //     ]),
 //     registerUser
 //     )
-
 // export default router
-
 
 
 // Importing necessary modules and functions
 import express from "express";
 import { loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
+
+// Assuming verifyJWT middleware is defined in a separate file, import it
+import { verifyJWT } from "../middlewares/auth.middleware.js"; // Adjust the path as per your actual file structure
 
 // Creating an instance of the Express Router
 const { Router } = express;
@@ -58,4 +56,4 @@ router.route("/login").post(loginUser);
 router.route("/logout").post(verifyJWT, logoutUser);
 
 // Exporting the router to be used by the application
-export default router;
+export default router
